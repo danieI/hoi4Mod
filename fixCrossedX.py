@@ -38,7 +38,6 @@ def edgeLines():
         for r in range(0,xmax-2):
             if all(imgArr[i][r] == col):
                 pix = imgArr[i][r]
-                colArr.append([i,r])
                 ul = imgArr[i-1][r-1]
                 uu = imgArr[i-1][r]
                 ur = imgArr[i-1][r+1]
@@ -65,27 +64,10 @@ def getHLines():
 
     #get all pixels that are [255,255,255]
     colArr = []
-    #get all [255,255,255] pixels that are the edge
-    edgeArr = []
     for i in range(0,ymax-2):
         for r in range(0,xmax-2):
             if all(imgArr[i][r] == col):
-                pix = imgArr[i][r]
                 colArr.append([i,r])
-                ul = imgArr[i-1][r-1]
-                uu = imgArr[i-1][r]
-                ur = imgArr[i-1][r+1]
-                ll = imgArr[i][r-1]
-                rr = imgArr[i][r+1]
-                dl = imgArr[i+1][r-1]
-                dd = imgArr[i+1][r]
-                dr = imgArr[i+1][r+1]
-                fourSquare = [ul, uu, ur, ll, rr, dl, dd, dr]
-                sameArr = []
-                for sqr in fourSquare:
-                    sameArr.append(unique(pix, sqr))
-                if (any(sameArr)):
-                    edgeArr.append([i,r])
 
     #define horizontal lines
     hLines = []
@@ -112,12 +94,9 @@ def getHLines():
     for line in hLines:
         fileWriter.write(str(line) + "/n")
     fileWriter.close
-    fileWriter = open("edgeArr.txt", "w")
-    for edge in edgeArr:
-        fileWriter.write(str(edge) + "/n")
-    fileWriter.close
+
     print("finished writing")
-    #------------------------------------------------------------------------------------------------------------
+#------------------------------------------------------------------------------------------------------------
 def getVLines():
     col = np.array([255,255,255]).astype('uint8')
 
@@ -156,8 +135,30 @@ def getVLines():
 
     print("finished writing")
 #------------------------------------------------------------------------------------------------------------
+def getShapes(): #requires getH/VLines ran before
+    fileReader = open("hlines.txt", "r")
+    hLines = fileReader.read().split('/n')
+    fileReader.close()
+    fileReader = open("vlines.txt", "r")
+    vLines = fileReader.read().split('/n')
+    fileReader.close()
 
-
+    print(hLines)
+    #find all vLines that overlap with each hLine
+    #create indexed arr [hlineIndex, [vlineIndices . . .]]]
+    indexedArr = []
+    h = 0
+    v = -1
+    for hLine in hLines:
+        indexedArr.append([h,[]])
+        h += 1
+        for pix in hLine:
+            for vLine in vLines:
+                v += 1
+                if pix in vLine:
+                    indexedArr[h][1].append(v)
+                    break
+    print(indexedArr)
 
 def fixX():
     file1 = open('crossedX.txt', 'r')
@@ -234,6 +235,7 @@ def fixX():
                     ypos = x - sideLength + (int(i / (sideLength * 2)))
                     changeCol(xpos, ypos)
                     print("\n[" + str(xpos) + "," + str(ypos) + "]\n")
+#------------------------------------------------------------------------------------------------------------
 
 
 
@@ -301,6 +303,7 @@ def replaceCol():
         if i == 25:
             break
         print(len(posArrCopy))
+#------------------------------------------------------------------------------------------------------------
 
 
 
@@ -324,7 +327,8 @@ def saveImg():
     finalImg = Image.fromarray(imgArr, 'RGB')
 
     finalImg.save('preovincesAltered.bmp')
+#------------------------------------------------------------------------------------------------------------
 
-
-#replaceCol()
+getHLines()
 getVLines()
+getShapes()
