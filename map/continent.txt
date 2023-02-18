@@ -1,0 +1,4 @@
+continents = {
+	east
+	west
+}
